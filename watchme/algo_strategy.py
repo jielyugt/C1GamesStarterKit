@@ -105,7 +105,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.rush_efficiency_threshold = 0.5
         self.min_rush_scout_count = 5
         self.inc_rush_scout_count = 10
-        self.max_rush_scout_count = 40
+        self.max_rush_scout_count = 30
 
         self.assassinate_mode_on = False
         self.assassinate_ready = False
