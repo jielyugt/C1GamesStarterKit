@@ -56,7 +56,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             0: (TURRET, [[6, 10], [3, 11], [21, 10], [18, 10], [15, 10], [12, 10]])
         }
 
-        self.replace_health_threshold = 0.7
+        self.replace_unit_health_threshold = 0.6
 
         self.stage_0_defense_upgrades = [[3, 12], [5, 11], [6, 11], [3, 13],
                                          [5, 12], [6, 12], [6, 10], [3, 11]]
@@ -91,8 +91,6 @@ class AlgoStrategy(gamelib.AlgoCore):
 
         self.critical_defense_units = {}
 
-        self.factory_count = 0
-
         self.factory_locations =  [[i, 4] for i in range(13, 16)] + \
                                   [[i, 5] for i in range(13, 17)] + \
                                   [[i, 6] for i in range(13, 20)] + \
@@ -106,8 +104,8 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.last_rush_attack = (None, None, None)
         self.rush_efficiency_threshold = 0.5
         self.min_rush_scout_count = 5
-        self.inc_rush_scout_count = 5
-        self.max_rush_scout_count = 30
+        self.inc_rush_scout_count = 10
+        self.max_rush_scout_count = 40
 
         self.assassinate_mode_on = False
         self.assassinate_ready = False
@@ -115,8 +113,8 @@ class AlgoStrategy(gamelib.AlgoCore):
             0: (WALL, [[4, 11], [2, 13]])
         }
         self.assassinate_to_remove = [[0, 13], [1, 13], [1, 12], [2, 12], [2, 11], [3, 11]]
-        self.assassinate_bomb_count = 9
-        self.assassinate_dagger_count = 30
+        self.assassinate_bomb_count = 20
+        self.assassinate_dagger_count = 50
         self.assassinate_MP_requirement = self.assassinate_bomb_count + self.assassinate_dagger_count
 
         self.enemy_MP_threshold_list = [27, 47, 67]
@@ -136,8 +134,6 @@ class AlgoStrategy(gamelib.AlgoCore):
             if game_state.get_resource(MP, 0) > self.assassinate_MP_requirement:
                 self.assassinate_ready = True
             else:
-                self.assassinate_bomb_count += 2
-                self.assassinate_dagger_count += 3
                 self.assassinate_ready = False
 
         # Building basic defense
@@ -283,7 +279,7 @@ class AlgoStrategy(gamelib.AlgoCore):
                         is_unit_upgraded = curr_units[0].upgraded
                         unit_initial_cost = game_state.type_cost(unit_type, is_unit_upgraded)[0]
                         refund = 0.75 * unit_initial_cost * (unit_cur_health / unit_max_health)
-                        if float(unit_cur_health / unit_max_health) < 0.5:
+                        if float(unit_cur_health / unit_max_health) < self.replace_unit_health_threshold:
                             game_state.attempt_remove(unit)
 
     def upgrade_defense_for_round(self, game_state, upgrade_list):
