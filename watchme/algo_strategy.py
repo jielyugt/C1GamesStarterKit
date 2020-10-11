@@ -107,12 +107,12 @@ class AlgoStrategy(gamelib.AlgoCore):
             self.build_defense_for_round(game_state, self.level_1_defense)
             self.build_defense_for_round(game_state, self.level_2_defense)
 
-            # self.replace_defense_for_round(game_state, self.stage_0_replace_units)
-            # self.replace_defense_for_round(game_state, self.stage_1_replace_units)
+            self.replace_defense_for_round(game_state, self.stage_0_replace_units)
+            self.replace_defense_for_round(game_state, self.stage_1_replace_units)
 
             self.upgrade_defense_for_round(game_state, self.stage_0_defense_upgrades)
             self.upgrade_defense_for_round(game_state, self.stage_1_defense_upgrades)
-
+            game_state.attempt_spawn(INTERCEPTOR, self.level_1_interceptor_locations)
 
     def build_factory(self, game_state):
 
@@ -127,7 +127,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             game_state.attempt_spawn(unit_type, unit_locations)
 
     def replace_defense_for_round(self, game_state, replace_dict):
-        curr_sp = game_state.get_resource(SP, 0)
+        # curr_sp = game_state.get_resource(SP, 0)
         for i in replace_dict.keys():
             unit_type, unit_locations = replace_dict[i]
             for unit in unit_locations:
@@ -138,7 +138,6 @@ class AlgoStrategy(gamelib.AlgoCore):
                     is_unit_upgraded = curr_units[0].upgraded
                     unit_initial_cost = game_state.type_cost(unit_type, is_unit_upgraded)[0]
                     refund = 0.75 * unit_initial_cost * (unit_cur_health / unit_max_health)
-                    print(unit, unit_type, unit_max_health, unit_cur_health, is_unit_upgraded, unit_initial_cost, refund)
                     if float(unit_cur_health / unit_max_health) < 0.5:
                         game_state.attempt_remove(unit)
 
