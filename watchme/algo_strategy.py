@@ -65,8 +65,8 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.left_emergency = False
         self.right_emergency = False
         self.corner_peace_period_threshold = 5
-        self.right_critical_units = [[27, 13], [26, 13]]
         self.left_critical_units = [[0, 13], [1, 12]]
+        self.right_critical_units = [[27, 13], [26, 13]]
 
         self.stage_0_replace_units = {
             0: (WALL, [[27, 13], [26, 13], [26, 12]]),
