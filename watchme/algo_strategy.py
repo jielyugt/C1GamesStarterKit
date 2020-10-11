@@ -118,6 +118,11 @@ class AlgoStrategy(gamelib.AlgoCore):
             self.upgrade_defense_for_round(game_state, self.stage_1_defense_upgrades)
             game_state.attempt_spawn(INTERCEPTOR, self.level_1_interceptor_locations)
 
+            curr_mp = game_state.get_resource(MP, 0)
+            if curr_mp > 100:
+                game_state.attempt_spawn(SCOUT, [[15, 1] for _ in range(110)])
+
+
     def build_factory(self, game_state):
 
         for location in self.factory_locations:
