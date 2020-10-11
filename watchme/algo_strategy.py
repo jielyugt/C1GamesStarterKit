@@ -99,10 +99,18 @@ class AlgoStrategy(gamelib.AlgoCore):
                                   [[i, 9] for i in range(10, 23)] + \
                                   [[i, 10] for i in range(9, 24)]
 
+        # last_rush_attack = [turn_number, scout count, enemy health]
+        self.last_rush_attack = (None, None, None)
+        self.rush_efficiency_threshold = 0.5
+        self.min_rush_scout_count = 5
+        self.inc_rush_scout_count = 5
+        self.max_rush_scout_count = 20
+
+        self.assassinate_mode_on = False
+
     def on_turn(self, turn_state):
 
         game_state = gamelib.GameState(self.config, turn_state)
-        # gamelib.debug_write('Performing turn {} of your custom algo strategy'.format(game_state.turn_number))
         game_state.suppress_warnings(True)  #Comment or remove this line to enable warnings.
 
         self.watchme_strategy(game_state)
@@ -111,8 +119,32 @@ class AlgoStrategy(gamelib.AlgoCore):
 
 
     def watchme_strategy(self, game_state):
+        # Building basic defense
         self.build_defense(game_state)
+        # Building factories
         self.build_factory(game_state)
+        # Initiating attack
+        self.initiate_attack(game_state)
+
+    def initiate_attack(self, game_state):
+        curr_mp = game_state.get_resource(MP, 0)
+        last_rush_attack_round, last_rush_attack_scout_count, last_rush_attack_enemy_health = self.last_rush_attack
+        curr_enemy_health = game_state.enemy_health
+
+        if last_rush_attack_round is not None:
+            damage_dealt = last_rush_attack_enemy_health - curr_enemy_health
+            gamelib.debug_write("CURRENT ROUND NUMBER: {}".format(game_state.turn_number))
+            gamelib.debug_write("LAST EFFICIENCY: {}".format(float(damage_dealt / last_rush_attack_scout_count)))
+
+            if float(damage_dealt / last_rush_attack_scout_count) < self.rush_efficiency_threshold:
+                self.min_rush_scout_count += self.inc_rush_scout_count
+                if self.min_rush_scout_count > self.max_rush_scout_count:
+                    self.assassinate_mode_on = True
+                    game_state.attempt_spawn(DEMOLISHER, [[18, 4] for _ in range(2)])
+
+        if curr_mp > self.min_rush_scout_count and not self.assassinate_mode_on:
+            spawn_number = game_state.attempt_spawn(SCOUT, [[15, 1] for _ in range(100)])
+            self.last_rush_attack = (game_state.turn_number, spawn_number, curr_enemy_health)
 
 
     def build_defense(self, game_state):
@@ -137,11 +169,7 @@ class AlgoStrategy(gamelib.AlgoCore):
 
             self.upgrade_defense_for_round(game_state, self.stage_0_defense_upgrades)
             self.upgrade_defense_for_round(game_state, self.stage_1_defense_upgrades)
-            game_state.attempt_spawn(INTERCEPTOR, self.level_1_interceptor_locations)
-
-            curr_mp = game_state.get_resource(MP, 0)
-            if curr_mp > 10:
-                game_state.attempt_spawn(SCOUT, [[15, 1] for _ in range(10)])
+            # game_state.attempt_spawn(INTERCEPTOR, self.level_1_interceptor_locations)
 
 
     def detect_corner_attacked(self, game_state):
