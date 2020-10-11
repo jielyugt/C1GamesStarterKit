@@ -45,7 +45,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         }
         self.level_1_interceptor_locations = [[4, 9], [10, 3]]
 
-        self.failsafe_interceptor_locations = [[4, 9], [7, 6]]
+        self.failsafe_interceptor_locations = [[7, 6], [7, 6]]
 
         self.level_2_defense = {
             0: (WALL, [[26, 13], [25, 12]]),
@@ -118,7 +118,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.assassinate_dagger_count = 30
         self.assassinate_MP_requirement = self.assassinate_bomb_count + self.assassinate_dagger_count
 
-        self.enemy_MP_threshold_list = [30, 50, 70]
+        self.enemy_MP_threshold_list = [27, 47, 67]
 
     def on_turn(self, turn_state):
 
