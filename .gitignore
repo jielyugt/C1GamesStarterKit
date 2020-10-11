@@ -8,5 +8,7 @@ algos/*
 dist/*
 !dist/.gitkeep
 
+.idea/
+
 *.zip
 */.idea/*
