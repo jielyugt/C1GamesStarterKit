@@ -45,11 +45,15 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.scored_on_locations = []
         self.level_0_defense = {
             'wall': [[0, 13], [27, 13], [26, 12]],
-            'turret': [[3, 12], [22, 11], [7, 8], [17, 6]]
+            'turret': [[3, 12], [22, 11], [7, 8]]
         }
-
-        self.factory_locations =  [[13, 2], [14, 2], [13, 3], [14, 3],
-                                   [13, 4], [14, 4], [13, 5], [14, 5]]
+        self.factory_locations = [[i, 2] for i in range(13, 15)] + \
+                                 [[i, 3] for i in range(13, 15)] + \
+                                 [[i, 4] for i in range(13, 16)] + \
+                                 [[i, 5] for i in range(13, 17)] + \
+                                 [[i, 6] for i in range(13, 20)] + \
+                                 [[i, 7] for i in range(12, 21)] + \
+                                 [[i, 8] for i in range(11, 22)]
 
 
     def on_turn(self, turn_state):
@@ -95,8 +99,10 @@ class AlgoStrategy(gamelib.AlgoCore):
 
 
     def build_factory(self, game_state):
-        game_state.attempt_upgrade(self.factory_locations)
-        game_state.attempt_spawn(FACTORY, self.factory_locations)
+        for location in self.factory_locations:
+            game_state.attempt_spawn(FACTORY, location)
+            game_state.attempt_upgrade(location)
+
 
 
     def build_defense_for_round(self, game_state, defense_dict):
