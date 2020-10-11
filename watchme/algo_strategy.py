@@ -53,18 +53,19 @@ class AlgoStrategy(gamelib.AlgoCore):
         }
 
         self.level_3_defense = {
-            0: (TURRET, [[6, 10], [3, 11], [21, 10], [18, 10], [15, 10], [12, 10]])
+            0: (WALL, [[1, 13]]),
+            1: (TURRET, [[6, 10], [3, 11], [21, 10], [18, 10], [15, 10], [12, 10]])
         }
 
-        self.replace_unit_health_threshold = 0.6
+        self.replace_unit_health_threshold = 0.5
 
         self.stage_0_defense_upgrades = [[3, 12], [5, 11], [6, 11], [3, 13],
                                          [5, 12], [6, 12], [6, 10], [3, 11]]
 
-        self.stage_1_defense_upgrades = [[27, 13], [0, 13], [26, 13], [1, 12],
+        self.stage_1_defense_upgrades = [[27, 13], [0, 13], [1, 13], [26, 13], [1, 12],
                                          [26, 12], [25, 12], [25, 11], [25, 13]]
 
-        self.stage_2_defense_upgrades = [[6, 10], [3, 11]]
+        # self.stage_2_defense_upgrades = [[6, 10], [3, 11]]
 
         self.last_hit_corner = {
             'left': None,
