@@ -43,7 +43,9 @@ class AlgoStrategy(gamelib.AlgoCore):
             1: (TURRET, [[5, 11], [6, 11]]),
             2: (WALL, [[2, 12], [6, 12], [5, 12]])
         }
-        self.level_1_interceptor_locations = [[4, 9], [7, 6]]
+        self.level_1_interceptor_locations = [[4, 9], [10, 3]]
+
+        self.failsafe_interceptor_locations = [[4, 9], [4, 6]]
 
         self.level_2_defense = {
             0: (WALL, [[26, 13], [25, 12]]),
@@ -116,6 +118,8 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.assassinate_dagger_count = 30
         self.assassinate_MP_requirement = self.assassinate_bomb_count + self.assassinate_dagger_count
 
+        self.enemy_MP_threshold_list = [30, 50, 70]
+
     def on_turn(self, turn_state):
 
         game_state = gamelib.GameState(self.config, turn_state)
@@ -182,11 +186,17 @@ class AlgoStrategy(gamelib.AlgoCore):
         else:
             if self.assassinate_ready:
                 self.build_defense_for_round(game_state, self.assassinate_roadblock)
+                game_state.attempt_remove(self.assassinate_roadblock)
 
             self.build_defense_for_round(game_state, self.level_0_defense)
             self.build_defense_for_round(game_state, self.level_1_defense)
             self.build_defense_for_round(game_state, self.level_2_defense)
             self.build_defense_for_round(game_state, self.level_3_defense)
+
+            enemy_MP = game_state.get_resource(MP, 1)
+            for thresh in self.enemy_MP_threshold_list:
+                if enemy_MP >= thresh:
+                    game_state.attempt_spawn(INTERCEPTOR, self.failsafe_interceptor_locations)
 
             self.detect_corner_attacked(game_state)
 
