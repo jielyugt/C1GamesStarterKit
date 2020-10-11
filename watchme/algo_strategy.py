@@ -44,8 +44,18 @@ class AlgoStrategy(gamelib.AlgoCore):
         # This is a good place to do initial setup
         self.scored_on_locations = []
         self.level_0_defense = {
-            'wall': [[0, 13], [27, 13], [26, 12]],
-            'turret': [[3, 12], [22, 11], [7, 8]]
+            WALL: [[0, 13], [27, 13], [26, 12], [1, 12], [3, 13], [22, 12]],
+            TURRET: [[3, 12], [22, 11], [7, 8]]
+        }
+        self.critical_defense_units = {}
+        self.level_1_defense = {
+            WALL: [[25, 11], [24, 10], [23, 9], [22, 8],
+            [23, 9], [22, 8], [21, 7], [20, 6],
+            [19, 5], [18, 5], [17, 5], [16, 4],
+            [15, 3], [12, 3], [11, 4], [10, 5],
+            [9, 6], [8, 7], [6, 9], [5, 10]],
+            TURRET: [[5, 11], [6, 11]],
+            WALL: [[5, 12], [6, 12]]
         }
         self.factory_locations = [[i, 2] for i in range(13, 15)] + \
                                  [[i, 3] for i in range(13, 15)] + \
@@ -54,6 +64,7 @@ class AlgoStrategy(gamelib.AlgoCore):
                                  [[i, 6] for i in range(13, 20)] + \
                                  [[i, 7] for i in range(12, 21)] + \
                                  [[i, 8] for i in range(11, 22)]
+
 
 
     def on_turn(self, turn_state):
@@ -107,10 +118,8 @@ class AlgoStrategy(gamelib.AlgoCore):
 
     def build_defense_for_round(self, game_state, defense_dict):
         for key in defense_dict.keys():
-            if key == 'wall':
-                game_state.attempt_spawn(WALL, defense_dict[key])
-            elif key == 'turret':
-                game_state.attempt_spawn(TURRET, defense_dict[key])
+            game_state.attempt_spawn(key, defense_dict[key])
+
 
 
     def build_defences(self, game_state):
