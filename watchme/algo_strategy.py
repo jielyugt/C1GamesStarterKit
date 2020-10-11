@@ -38,9 +38,20 @@ class AlgoStrategy(gamelib.AlgoCore):
                    [11, 4], [10, 5], [9, 6], [8, 7],
                    [6, 9], [5, 10]]),
             1: (TURRET, [[5, 11], [6, 11]]),
-            2: (WALL, [[6, 12], [5, 12]])
+            2: (WALL, [[2, 12], [6, 12], [5, 12]])
         }
         self.level_1_interceptor_locations = [[4, 9], [7, 6]]
+
+        self.level_2_defense = {
+            0: (WALL, [[26, 13], [25, 12]]),
+            1: (TURRET, [[25, 13]])
+        }
+
+        self.stage_0_defense_upgrades = [[3, 12], [5, 11], [6, 11], [3, 13],
+                                         [5, 12], [6, 12]]
+
+        self.stage_1_defense_upgrades = [[27, 13], [26, 13], [26, 12], [25, 12],
+                                         [25, 11], [25, 13]]
 
         self.critical_defense_units = {}
 
@@ -68,14 +79,22 @@ class AlgoStrategy(gamelib.AlgoCore):
 
 
     def build_defense(self, game_state):
-
-        if game_state.turn_number <= 2:
+        turn = game_state.turn_number
+        if turn <= 2:
             self.build_defense_for_round(game_state, self.level_0_defense)
             game_state.attempt_spawn(INTERCEPTOR, self.level_0_interceptor_locations)
-        else:
+        elif turn <= 4:
             self.build_defense_for_round(game_state, self.level_0_defense)
             self.build_defense_for_round(game_state, self.level_1_defense)
             game_state.attempt_spawn(INTERCEPTOR, self.level_1_interceptor_locations)
+        else:
+            self.build_defense_for_round(game_state, self.level_0_defense)
+            self.build_defense_for_round(game_state, self.level_1_defense)
+            self.build_defense_for_round(game_state, self.level_2_defense)
+
+            self.upgrade_defense_for_round(game_state, self.stage_0_defense_upgrades)
+            self.upgrade_defense_for_round(game_state, self.stage_1_defense_upgrades)
+
 
     def build_factory(self, game_state):
 
@@ -88,6 +107,13 @@ class AlgoStrategy(gamelib.AlgoCore):
         for order in defense_dict.keys():
             unit_type, unit_locations = defense_dict[order]
             game_state.attempt_spawn(unit_type, unit_locations)
+
+    def replace_defense_for_round(self, game_state):
+        return None
+
+    def upgrade_defense_for_round(self, game_state, upgrade_list):
+        for unit in upgrade_list:
+            game_state.attempt_upgrade(unit)
 
 if __name__ == "__main__":
     algo = AlgoStrategy()
