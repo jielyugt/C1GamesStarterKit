@@ -104,7 +104,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.rush_efficiency_threshold = 0.5
         self.min_rush_scout_count = 5
         self.inc_rush_scout_count = 5
-        self.max_rush_scout_count = 20
+        self.max_rush_scout_count = 30
 
         self.assassinate_mode_on = False
 
@@ -133,10 +133,10 @@ class AlgoStrategy(gamelib.AlgoCore):
 
         if last_rush_attack_round is not None:
             damage_dealt = last_rush_attack_enemy_health - curr_enemy_health
-            gamelib.debug_write("CURRENT ROUND NUMBER: {}".format(game_state.turn_number))
-            gamelib.debug_write("LAST EFFICIENCY: {}".format(float(damage_dealt / last_rush_attack_scout_count)))
+            # gamelib.debug_write("CURRENT ROUND NUMBER: {}".format(game_state.turn_number))
+            # gamelib.debug_write("LAST EFFICIENCY: {}".format(float(damage_dealt / last_rush_attack_scout_count)))
 
-            if float(damage_dealt / last_rush_attack_scout_count) < self.rush_efficiency_threshold:
+            if game_state.turn_number == last_rush_attack_round + 1 and float(damage_dealt / last_rush_attack_scout_count) < self.rush_efficiency_threshold:
                 self.min_rush_scout_count += self.inc_rush_scout_count
                 if self.min_rush_scout_count > self.max_rush_scout_count:
                     self.assassinate_mode_on = True
