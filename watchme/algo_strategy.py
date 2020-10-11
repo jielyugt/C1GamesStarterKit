@@ -49,13 +49,15 @@ class AlgoStrategy(gamelib.AlgoCore):
             1: (TURRET, [[25, 13]])
         }
 
-        self.replace_health_threshold = 0.5
+        self.replace_health_threshold = 0.7
 
         self.stage_0_defense_upgrades = [[3, 12], [5, 11], [6, 11], [3, 13],
                                          [5, 12], [6, 12]]
 
-        self.stage_1_defense_upgrades = [[27, 13], [26, 13], [26, 12], [25, 12],
-                                         [25, 11], [25, 13]]
+        self.stage_1_defense_upgrades = [[27, 13], [0, 13], [26, 13], [1, 12],
+                                         [26, 12], [25, 12], [25, 11], [25, 13]]
+
+        self.most_critical_units = [[27, 13], [26, 13], [0, 13]]
 
         self.stage_0_replace_units = {
             0: (WALL, [[27, 13], [26, 13], [26, 12]]),
@@ -74,7 +76,9 @@ class AlgoStrategy(gamelib.AlgoCore):
                                   [[i, 5] for i in range(13, 17)] + \
                                   [[i, 6] for i in range(13, 20)] + \
                                   [[i, 7] for i in range(12, 21)] + \
-                                  [[i, 8] for i in range(11, 22)]
+                                  [[i, 8] for i in range(11, 22)] + \
+                                  [[i, 9] for i in range(10, 23)] + \
+                                  [[i, 10] for i in range(9, 24)]
 
     def on_turn(self, turn_state):
 
@@ -133,13 +137,16 @@ class AlgoStrategy(gamelib.AlgoCore):
             for unit in unit_locations:
                 curr_units = game_state.game_map[unit[0], unit[1]]
                 if len(curr_units) > 0:
-                    unit_max_health = curr_units[0].max_health
-                    unit_cur_health = curr_units[0].health
-                    is_unit_upgraded = curr_units[0].upgraded
-                    unit_initial_cost = game_state.type_cost(unit_type, is_unit_upgraded)[0]
-                    refund = 0.75 * unit_initial_cost * (unit_cur_health / unit_max_health)
-                    if float(unit_cur_health / unit_max_health) < 0.5:
+                    if unit in self.most_critical_units:
                         game_state.attempt_remove(unit)
+                    else:
+                        unit_max_health = curr_units[0].max_health
+                        unit_cur_health = curr_units[0].health
+                        is_unit_upgraded = curr_units[0].upgraded
+                        unit_initial_cost = game_state.type_cost(unit_type, is_unit_upgraded)[0]
+                        refund = 0.75 * unit_initial_cost * (unit_cur_health / unit_max_health)
+                        if float(unit_cur_health / unit_max_health) < 0.5:
+                            game_state.attempt_remove(unit)
 
     def upgrade_defense_for_round(self, game_state, upgrade_list):
         for unit in upgrade_list:
