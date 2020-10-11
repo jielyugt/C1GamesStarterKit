@@ -212,8 +212,7 @@ class AlgoStrategy(gamelib.AlgoCore):
 
     def build_factory(self, game_state):
         for location in self.factory_locations:
-            x = game_state.attempt_spawn(FACTORY, location)
-            self.factory_count += x
+            game_state.attempt_spawn(FACTORY, location)
             game_state.attempt_upgrade(location)
 
     def count_factories(self, game_state):
