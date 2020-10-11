@@ -107,6 +107,14 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.max_rush_scout_count = 30
 
         self.assassinate_mode_on = False
+        self.assassinate_ready = False
+        self.assassinate_roadblock = {
+            0: (WALL, [[4, 11], [2, 13]])
+        }
+        self.assassinate_to_remove = [[0, 13], [1, 13], [1, 12], [2, 12], [2, 11], [3, 11]]
+        self.assassinate_bomb_count = 9
+        self.assassinate_dagger_count = 30
+        self.assassinate_MP_requirement = self.assassinate_bomb_count + self.assassinate_dagger_count
 
     def on_turn(self, turn_state):
 
@@ -119,12 +127,23 @@ class AlgoStrategy(gamelib.AlgoCore):
 
 
     def watchme_strategy(self, game_state):
+        if self.assassinate_mode_on:
+            if game_state.get_resource(MP, 0) > self.assassinate_MP_requirement:
+                self.assassinate_ready = True
+            else:
+                self.assassinate_bomb_count += 2
+                self.assassinate_dagger_count += 3
+                self.assassinate_ready = False
+
         # Building basic defense
         self.build_defense(game_state)
         # Building factories
         self.build_factory(game_state)
         # Initiating attack
         self.initiate_attack(game_state)
+
+        if self.assassinate_mode_on:
+            game_state.attempt_remove(self.assassinate_to_remove)
 
     def initiate_attack(self, game_state):
         curr_mp = game_state.get_resource(MP, 0)
@@ -140,11 +159,15 @@ class AlgoStrategy(gamelib.AlgoCore):
                 self.min_rush_scout_count += self.inc_rush_scout_count
                 if self.min_rush_scout_count > self.max_rush_scout_count:
                     self.assassinate_mode_on = True
-                    game_state.attempt_spawn(DEMOLISHER, [[18, 4] for _ in range(2)])
+
 
         if curr_mp > self.min_rush_scout_count and not self.assassinate_mode_on:
             spawn_number = game_state.attempt_spawn(SCOUT, [[15, 1] for _ in range(100)])
             self.last_rush_attack = (game_state.turn_number, spawn_number, curr_enemy_health)
+
+        if self.assassinate_ready:
+            game_state.attempt_spawn(SCOUT, [[17, 3] for _ in range(self.assassinate_bomb_count)])
+            game_state.attempt_spawn(SCOUT, [[18, 4] for _ in range(1000)])
 
 
     def build_defense(self, game_state):
@@ -157,6 +180,9 @@ class AlgoStrategy(gamelib.AlgoCore):
             self.build_defense_for_round(game_state, self.level_1_defense)
             game_state.attempt_spawn(INTERCEPTOR, self.level_1_interceptor_locations)
         else:
+            if self.assassinate_ready:
+                self.build_defense_for_round(game_state, self.assassinate_roadblock)
+
             self.build_defense_for_round(game_state, self.level_0_defense)
             self.build_defense_for_round(game_state, self.level_1_defense)
             self.build_defense_for_round(game_state, self.level_2_defense)
@@ -217,6 +243,8 @@ class AlgoStrategy(gamelib.AlgoCore):
 
         for order in defense_dict.keys():
             unit_type, unit_locations = defense_dict[order]
+            if self.assassinate_ready:
+                unit_locations = [i for i in unit_locations if i not in self.assassinate_to_remove]
             game_state.attempt_spawn(unit_type, unit_locations)
 
     def replace_defense_for_round(self, game_state, replace_dict):
