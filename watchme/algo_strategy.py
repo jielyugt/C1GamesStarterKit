@@ -25,20 +25,21 @@ class AlgoStrategy(gamelib.AlgoCore):
         INTERCEPTOR = config["unitInformation"][5]["shorthand"]
 
         self.level_0_defense = {
-            WALL: [[0, 13], [27, 13], [26, 12], [1, 12], [3, 13], [23, 12]],
-            TURRET: [[3, 12], [23, 11], [7, 8]]
+            0: (WALL, [[0, 13], [27, 13], [26, 12], [1, 12], [3, 13], [23, 12]]),
+            1: (TURRET, [[3, 12], [23, 11], [7, 8]])
         }
         self.level_0_interceptor_locations = [[25, 11], [21, 7], [10, 3], [8, 5], [4, 9]]
         self.level_1_interceptor_locations = [[4, 9], [7, 6]]
         self.critical_defense_units = {}
         self.level_1_defense = {
-            WALL: [[25, 11], [24, 10], [23, 9], [22, 8],
+            0: (WALL,[[25, 11], [24, 10], [23, 9], [22, 8],
                    [23, 9], [22, 8], [21, 7], [20, 6],
                    [19, 5], [18, 5], [17, 5], [16, 4],
                    [15, 3], [14, 3], [13, 3], [12, 3],
                    [11, 4], [10, 5], [9, 6], [8, 7],
-                   [6, 9], [5, 10]],
-            TURRET: [[5, 11], [6, 11]],
+                   [6, 9], [5, 10]]),
+            1: (TURRET, [[5, 11], [6, 11]]),
+            2: (WALL, [[6, 12], [5, 12]])
         }
         self.factory_locations =  [[i, 4] for i in range(13, 16)] + \
                                   [[i, 5] for i in range(13, 17)] + \
@@ -81,8 +82,9 @@ class AlgoStrategy(gamelib.AlgoCore):
 
     def build_defense_for_round(self, game_state, defense_dict):
 
-        for key in defense_dict.keys():
-            game_state.attempt_spawn(key, defense_dict[key])
+        for order in defense_dict.keys():
+            unit_type, unit_locations = defense_dict[order]
+            game_state.attempt_spawn(unit_type, unit_locations)
 
 if __name__ == "__main__":
     algo = AlgoStrategy()
