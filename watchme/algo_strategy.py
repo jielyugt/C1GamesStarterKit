@@ -116,8 +116,8 @@ class AlgoStrategy(gamelib.AlgoCore):
         factory_locations = [[14, 2]]
         game_state.attempt_spawn(FACTORY, factory_locations)
         game_state.attempt_upgrade(factory_locations)
-
-        interceptor_locations = [[]]
+        interceptor_locations = [[24, 10], [21, 7], [10, 3], [8, 5], [4, 9]]
+        game_state.attempt_spawn(INTERCEPTOR, interceptor_locations)
 
     def build_defences(self, game_state):
         """
