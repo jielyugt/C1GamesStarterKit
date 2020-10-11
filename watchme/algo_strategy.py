@@ -51,18 +51,18 @@ class AlgoStrategy(gamelib.AlgoCore):
         }
 
         self.level_3_defense = {
-            0: (TURRET, [[7, 12], [5, 10]] + [[i, 11] for i in range(7, 22)])
+            0: (TURRET, [[6, 10], [3, 11]])
         }
 
         self.replace_health_threshold = 0.7
 
         self.stage_0_defense_upgrades = [[3, 12], [5, 11], [6, 11], [3, 13],
-                                         [5, 12], [6, 12]]
+                                         [5, 12], [6, 12], [6, 10], [3, 11]]
 
         self.stage_1_defense_upgrades = [[27, 13], [0, 13], [26, 13], [1, 12],
                                          [26, 12], [25, 12], [25, 11], [25, 13]]
 
-        self.stage_2_defense_upgrades = [[7, 12], [5, 10]] + [[i, 11] for i in range(7, 22)]
+        self.stage_2_defense_upgrades = [[6, 10], [3, 11]]
 
         self.last_hit_corner = {
             'left': None,
@@ -128,6 +128,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             self.build_defense_for_round(game_state, self.level_0_defense)
             self.build_defense_for_round(game_state, self.level_1_defense)
             self.build_defense_for_round(game_state, self.level_2_defense)
+            self.build_defense_for_round(game_state, self.level_3_defense)
 
             self.detect_corner_attacked(game_state)
 
@@ -141,9 +142,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             curr_mp = game_state.get_resource(MP, 0)
             if curr_mp > 10:
                 game_state.attempt_spawn(SCOUT, [[15, 1] for _ in range(10)])
-            if self.factory_count >= 10:
-                self.build_defense_for_round(game_state, self.level_3_defense)
-                self.upgrade_defense_for_round(game_state, self.stage_2_defense_upgrades)
+
 
     def detect_corner_attacked(self, game_state):
         curr_turn = game_state.turn_number
