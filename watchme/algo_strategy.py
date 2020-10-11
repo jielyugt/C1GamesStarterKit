@@ -14,7 +14,8 @@ class AlgoStrategy(gamelib.AlgoCore):
 
     def on_game_start(self, config):
 
-        gamelib.debug_write('Configuring your custom algo strategy...')
+        # gamelib.debug_write('Configuring your custom algo strategy...')
+        gamelib.debug_write('GAME STARTED!!!')
         self.config = config
         global WALL, FACTORY, TURRET, SCOUT, DEMOLISHER, INTERCEPTOR, MP, SP
         WALL = config["unitInformation"][0]["shorthand"]
@@ -57,7 +58,15 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.stage_1_defense_upgrades = [[27, 13], [0, 13], [26, 13], [1, 12],
                                          [26, 12], [25, 12], [25, 11], [25, 13]]
 
-        self.most_critical_units = [[27, 13], [26, 13], [0, 13]]
+        self.last_hit_corner = {
+            'left': None,
+            'right': None
+        }
+        self.left_emergency = False
+        self.right_emergency = False
+        self.corner_peace_period_threshold = 5
+        self.right_critical_units = [[27, 13], [26, 13]]
+        self.left_critical_units = [[0, 13], [1, 12]]
 
         self.stage_0_replace_units = {
             0: (WALL, [[27, 13], [26, 13], [26, 12]]),
@@ -83,7 +92,7 @@ class AlgoStrategy(gamelib.AlgoCore):
     def on_turn(self, turn_state):
 
         game_state = gamelib.GameState(self.config, turn_state)
-        gamelib.debug_write('Performing turn {} of your custom algo strategy'.format(game_state.turn_number))
+        # gamelib.debug_write('Performing turn {} of your custom algo strategy'.format(game_state.turn_number))
         game_state.suppress_warnings(True)  #Comment or remove this line to enable warnings.
 
         self.watchme_strategy(game_state)
@@ -92,7 +101,6 @@ class AlgoStrategy(gamelib.AlgoCore):
 
 
     def watchme_strategy(self, game_state):
-
         self.build_defense(game_state)
         self.build_factory(game_state)
 
@@ -111,6 +119,8 @@ class AlgoStrategy(gamelib.AlgoCore):
             self.build_defense_for_round(game_state, self.level_1_defense)
             self.build_defense_for_round(game_state, self.level_2_defense)
 
+            self.detect_corner_attacked(game_state)
+
             self.replace_defense_for_round(game_state, self.stage_0_replace_units)
             self.replace_defense_for_round(game_state, self.stage_1_replace_units)
 
@@ -119,8 +129,41 @@ class AlgoStrategy(gamelib.AlgoCore):
             game_state.attempt_spawn(INTERCEPTOR, self.level_1_interceptor_locations)
 
             curr_mp = game_state.get_resource(MP, 0)
-            if curr_mp > 100:
-                game_state.attempt_spawn(SCOUT, [[15, 1] for _ in range(110)])
+            if curr_mp > 10:
+                game_state.attempt_spawn(SCOUT, [[15, 1] for _ in range(10)])
+
+    def detect_corner_attacked(self, game_state):
+        curr_turn = game_state.turn_number
+        # Check left corner
+        for unit in self.left_critical_units:
+            curr_units = game_state.game_map[unit[0], unit[1]]
+            if len(curr_units) > 0:
+                unit_max_health = curr_units[0].max_health
+                unit_cur_health = curr_units[0].health
+                if unit_cur_health < unit_max_health:
+                    self.last_hit_corner['left'] = curr_turn
+                    self.left_emergency = True
+                else:
+                    last_hit_turn = self.last_hit_corner['left']
+                    if last_hit_turn is not None:
+                        if curr_turn - last_hit_turn > self.corner_peace_period_threshold:
+                            self.left_emergency = False
+        # Check right corner
+        for unit in self.right_critical_units:
+            curr_units = game_state.game_map[unit[0], unit[1]]
+            if len(curr_units) > 0:
+                unit_max_health = curr_units[0].max_health
+                unit_cur_health = curr_units[0].health
+                if unit_cur_health < unit_max_health:
+                    self.last_hit_corner['right'] = curr_turn
+                    self.right_emergency = True
+                else:
+                    last_hit_turn = self.last_hit_corner['right']
+                    if last_hit_turn is not None:
+                        if curr_turn - last_hit_turn > self.corner_peace_period_threshold:
+                            self.right_emergency = False
+
+
 
 
     def build_factory(self, game_state):
@@ -142,7 +185,8 @@ class AlgoStrategy(gamelib.AlgoCore):
             for unit in unit_locations:
                 curr_units = game_state.game_map[unit[0], unit[1]]
                 if len(curr_units) > 0:
-                    if unit in self.most_critical_units:
+                    if (self.left_emergency and unit in self.left_critical_units) or \
+                       (self.right_emergency and unit in self.right_critical_units):
                         game_state.attempt_remove(unit)
                     else:
                         unit_max_health = curr_units[0].max_health
