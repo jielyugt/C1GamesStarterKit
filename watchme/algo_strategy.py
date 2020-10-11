@@ -29,8 +29,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             1: (TURRET, [[3, 12], [23, 11], [7, 8]])
         }
         self.level_0_interceptor_locations = [[25, 11], [21, 7], [10, 3], [4, 9], [25, 11]]
-        self.level_1_interceptor_locations = [[4, 9], [7, 6]]
-        self.critical_defense_units = {}
+
         self.level_1_defense = {
             0: (WALL,[[25, 11], [24, 10], [23, 9], [22, 8],
                    [23, 9], [22, 8], [21, 7], [20, 6],
@@ -41,6 +40,10 @@ class AlgoStrategy(gamelib.AlgoCore):
             1: (TURRET, [[5, 11], [6, 11]]),
             2: (WALL, [[6, 12], [5, 12]])
         }
+        self.level_1_interceptor_locations = [[4, 9], [7, 6]]
+
+        self.critical_defense_units = {}
+
         self.factory_locations =  [[i, 4] for i in range(13, 16)] + \
                                   [[i, 5] for i in range(13, 17)] + \
                                   [[i, 6] for i in range(13, 20)] + \
