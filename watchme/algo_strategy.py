@@ -50,6 +50,10 @@ class AlgoStrategy(gamelib.AlgoCore):
             1: (TURRET, [[25, 13]])
         }
 
+        self.level_3_defense = {
+            0: (TURRET, [[7, 12], [5, 10]] + [[i, 11] for i in range(7, 22)])
+        }
+
         self.replace_health_threshold = 0.7
 
         self.stage_0_defense_upgrades = [[3, 12], [5, 11], [6, 11], [3, 13],
@@ -57,6 +61,8 @@ class AlgoStrategy(gamelib.AlgoCore):
 
         self.stage_1_defense_upgrades = [[27, 13], [0, 13], [26, 13], [1, 12],
                                          [26, 12], [25, 12], [25, 11], [25, 13]]
+
+        self.stage_2_defense_upgrades = [[7, 12], [5, 10]] + [[i, 11] for i in range(7, 22)]
 
         self.last_hit_corner = {
             'left': None,
@@ -69,7 +75,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.right_critical_units = [[27, 13], [26, 13]]
 
         self.stage_0_replace_units = {
-            0: (WALL, [[27, 13], [26, 13], [26, 12]]),
+            0: (WALL, [[0, 13], [1, 12], [27, 13], [26, 13], [26, 12]]),
             1: (TURRET, [[25, 13]]),
             2: (WALL, [[25, 12], [25, 11]])
         }
@@ -80,6 +86,8 @@ class AlgoStrategy(gamelib.AlgoCore):
         }
 
         self.critical_defense_units = {}
+
+        self.factory_count = 0
 
         self.factory_locations =  [[i, 4] for i in range(13, 16)] + \
                                   [[i, 5] for i in range(13, 17)] + \
@@ -131,6 +139,9 @@ class AlgoStrategy(gamelib.AlgoCore):
             curr_mp = game_state.get_resource(MP, 0)
             if curr_mp > 10:
                 game_state.attempt_spawn(SCOUT, [[15, 1] for _ in range(10)])
+            if self.factory_count >= 10:
+                self.build_defense_for_round(game_state, self.level_3_defense)
+                self.upgrade_defense_for_round(game_state, self.stage_2_defense_upgrades)
 
     def detect_corner_attacked(self, game_state):
         curr_turn = game_state.turn_number
@@ -169,7 +180,8 @@ class AlgoStrategy(gamelib.AlgoCore):
     def build_factory(self, game_state):
 
         for location in self.factory_locations:
-            game_state.attempt_spawn(FACTORY, location)
+            x = game_state.attempt_spawn(FACTORY, location)
+            self.factory_count += x
             game_state.attempt_upgrade(location)
 
     def build_defense_for_round(self, game_state, defense_dict):
