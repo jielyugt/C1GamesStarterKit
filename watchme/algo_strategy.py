@@ -28,7 +28,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             0: (WALL, [[0, 13], [27, 13], [26, 12], [1, 12], [3, 13], [23, 12]]),
             1: (TURRET, [[3, 12], [23, 11], [7, 8]])
         }
-        self.level_0_interceptor_locations = [[25, 11], [21, 7], [10, 3], [8, 5], [4, 9]]
+        self.level_0_interceptor_locations = [[25, 11], [21, 7], [10, 3], [4, 9], [25, 11]]
         self.level_1_interceptor_locations = [[4, 9], [7, 6]]
         self.critical_defense_units = {}
         self.level_1_defense = {
