@@ -44,7 +44,8 @@ class AlgoStrategy(gamelib.AlgoCore):
         # This is a good place to do initial setup
         self.scored_on_locations = []
         self.level_0_defense = {
-            ''
+            'wall': [[0, 13], [27, 13], [26, 12], [25, 11]],
+            'turret': [[3, 12], [22, 11], [7, 8], [17, 6]]
         }
 
 
@@ -77,36 +78,26 @@ class AlgoStrategy(gamelib.AlgoCore):
         For offense we will use long range demolishers if they place stationary units near the enemy's front.
         If there are no stationary units to attack in the front, we will send Scouts to try and score quickly.
         """
-        if game_state.turn_number == 0:
-            self.build_initial_defense(game_state)
+        self.build_defense(game_state)
 
-        # # First, place basic defenses
-        # self.build_defences(game_state)
-        # # Now build reactive defenses based on where the enemy scored
-        # self.build_reactive_defense(game_state)
 
-        # # If the turn is less than 5, stall with interceptors and wait to see enemy's base
-        # if game_state.turn_number < 5:
-        #     self.stall_with_interceptors(game_state)
-        # else:
-        #     # Now let's analyze the enemy base to see where their defenses are concentrated.
-        #     # If they have many units in the front we can build a line for our demolishers to attack them at long range.
-        #     if self.detect_enemy_unit(game_state, unit_type=None, valid_x=None, valid_y=[14, 15]) > 10:
-        #         self.demolisher_line_strategy(game_state)
-        #     else:
-        #         # They don't have many units in the front so lets figure out their least defended area and send Scouts there.
+    def build_defense(self, game_state):
 
-        #         # Only spawn Scouts every other turn
-        #         # Sending more at once is better since attacks can only hit a single scout at a time
-        #         if game_state.turn_number % 2 == 1:
-        #             # To simplify we will just check sending them from back left and right
-        #             scout_spawn_location_options = [[13, 0], [14, 0]]
-        #             best_location = self.least_damage_spawn_location(game_state, scout_spawn_location_options)
-        #             game_state.attempt_spawn(SCOUT, best_location, 1000)
+        if game_state.turn_number <= 1:
+            self.build_defense_for_round(game_state, self.level_0_defense)
 
-        #         # Lastly, if we have spare SP, let's build some Factories to generate more resources
-        #         factory_locations = [[13, 2], [14, 2], [13, 3], [14, 3]]
-        #         game_state.attempt_spawn(FACTORY, factory_locations)
+        interceptor_locations = [[24, 10], [21, 7], [10, 3], [8, 5], [4, 9]]
+        game_state.attempt_spawn(INTERCEPTOR, interceptor_locations)
+
+
+
+    def build_defense_for_round(self, game_state, defense_dict):
+        for key in defense_dict.keys():
+            if key == 'wall':
+                game_state.attempt_spawn(WALL, defense_dict[key])
+            elif key == 'turret':
+                game_state.attempt_spawn(TURRET, defense_dict[key])
+
 
     def build_initial_defense(self, game_state):
         wall_locations = [[0, 13], [27, 13], [26, 12], [25, 11]]
@@ -116,8 +107,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         factory_locations = [[14, 2]]
         game_state.attempt_spawn(FACTORY, factory_locations)
         game_state.attempt_upgrade(factory_locations)
-        interceptor_locations = [[24, 10], [21, 7], [10, 3], [8, 5], [4, 9]]
-        game_state.attempt_spawn(INTERCEPTOR, interceptor_locations)
+
 
     def build_defences(self, game_state):
         """
