@@ -23,6 +23,8 @@ class AlgoStrategy(gamelib.AlgoCore):
         SCOUT = config["unitInformation"][3]["shorthand"]
         DEMOLISHER = config["unitInformation"][4]["shorthand"]
         INTERCEPTOR = config["unitInformation"][5]["shorthand"]
+        MP = 1
+        SP = 0
 
         self.level_0_defense = {
             0: (WALL, [[0, 13], [27, 13], [26, 12], [1, 12], [3, 13], [23, 12]]),
@@ -47,11 +49,24 @@ class AlgoStrategy(gamelib.AlgoCore):
             1: (TURRET, [[25, 13]])
         }
 
+        self.replace_health_threshold = 0.5
+
         self.stage_0_defense_upgrades = [[3, 12], [5, 11], [6, 11], [3, 13],
                                          [5, 12], [6, 12]]
 
         self.stage_1_defense_upgrades = [[27, 13], [26, 13], [26, 12], [25, 12],
                                          [25, 11], [25, 13]]
+
+        self.stage_0_replace_units = {
+            0: (WALL, [[27, 13], [26, 13], [26, 12]]),
+            1: (TURRET, [[25, 13]]),
+            2: (WALL, [[25, 12], [25, 11]])
+        }
+
+        self.stage_1_replace_units = {
+            0: (TURRET, [[3, 12], [5, 11], [6, 11]]),
+            1: (WALL, [[6, 12], [5, 12], [3, 13]])
+        }
 
         self.critical_defense_units = {}
 
@@ -92,6 +107,9 @@ class AlgoStrategy(gamelib.AlgoCore):
             self.build_defense_for_round(game_state, self.level_1_defense)
             self.build_defense_for_round(game_state, self.level_2_defense)
 
+            # self.replace_defense_for_round(game_state, self.stage_0_replace_units)
+            # self.replace_defense_for_round(game_state, self.stage_1_replace_units)
+
             self.upgrade_defense_for_round(game_state, self.stage_0_defense_upgrades)
             self.upgrade_defense_for_round(game_state, self.stage_1_defense_upgrades)
 
@@ -108,8 +126,21 @@ class AlgoStrategy(gamelib.AlgoCore):
             unit_type, unit_locations = defense_dict[order]
             game_state.attempt_spawn(unit_type, unit_locations)
 
-    def replace_defense_for_round(self, game_state):
-        return None
+    def replace_defense_for_round(self, game_state, replace_dict):
+        curr_sp = game_state.get_resource(SP, 0)
+        for i in replace_dict.keys():
+            unit_type, unit_locations = replace_dict[i]
+            for unit in unit_locations:
+                curr_units = game_state.game_map[unit[0], unit[1]]
+                if len(curr_units) > 0:
+                    unit_max_health = curr_units[0].max_health
+                    unit_cur_health = curr_units[0].health
+                    is_unit_upgraded = curr_units[0].upgraded
+                    unit_initial_cost = game_state.type_cost(unit_type, is_unit_upgraded)[0]
+                    refund = 0.75 * unit_initial_cost * (unit_cur_health / unit_max_health)
+                    print(unit, unit_type, unit_max_health, unit_cur_health, is_unit_upgraded, unit_initial_cost, refund)
+                    if float(unit_cur_health / unit_max_health) < 0.5:
+                        game_state.attempt_remove(unit)
 
     def upgrade_defense_for_round(self, game_state, upgrade_list):
         for unit in upgrade_list:
