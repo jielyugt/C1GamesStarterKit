@@ -43,7 +43,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             1: (TURRET, [[5, 11], [6, 11]]),
             2: (WALL, [[2, 12], [6, 12], [5, 12]])
         }
-        self.level_1_interceptor_locations = [[4, 9], [10, 3]]
+        self.level_1_interceptor_locations = [[4, 9], [10, 3], [10, 3]]
 
         self.failsafe_interceptor_locations = [[7, 6], [7, 6]]
 
