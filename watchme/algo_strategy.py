@@ -44,9 +44,12 @@ class AlgoStrategy(gamelib.AlgoCore):
         # This is a good place to do initial setup
         self.scored_on_locations = []
         self.level_0_defense = {
-            'wall': [[0, 13], [27, 13], [26, 12], [25, 11]],
+            'wall': [[0, 13], [27, 13], [26, 12]],
             'turret': [[3, 12], [22, 11], [7, 8], [17, 6]]
         }
+
+        self.factory_locations =  [[13, 2], [14, 2], [13, 3], [14, 3],
+                                   [13, 4], [14, 4], [13, 5], [14, 5]]
 
 
     def on_turn(self, turn_state):
@@ -61,7 +64,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         gamelib.debug_write('Performing turn {} of your custom algo strategy'.format(game_state.turn_number))
         game_state.suppress_warnings(True)  #Comment or remove this line to enable warnings.
 
-        self.starter_strategy(game_state)
+        self.watchme_strategy(game_state)
 
         game_state.submit_turn()
 
@@ -71,7 +74,7 @@ class AlgoStrategy(gamelib.AlgoCore):
     strategy and can safely be replaced for your custom algo.
     """
 
-    def starter_strategy(self, game_state):
+    def watchme_strategy(self, game_state):
         """
         For defense we will use a spread out layout and some interceptors early on.
         We will place turrets near locations the opponent managed to score on.
@@ -79,6 +82,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         If there are no stationary units to attack in the front, we will send Scouts to try and score quickly.
         """
         self.build_defense(game_state)
+        self.build_factory(game_state)
 
 
     def build_defense(self, game_state):
@@ -86,9 +90,13 @@ class AlgoStrategy(gamelib.AlgoCore):
         if game_state.turn_number <= 1:
             self.build_defense_for_round(game_state, self.level_0_defense)
 
-        interceptor_locations = [[24, 10], [21, 7], [10, 3], [8, 5], [4, 9]]
+        interceptor_locations = [[25, 11], [21, 7], [10, 3], [8, 5], [4, 9]]
         game_state.attempt_spawn(INTERCEPTOR, interceptor_locations)
 
+
+    def build_factory(self, game_state):
+        game_state.attempt_upgrade(self.factory_locations)
+        game_state.attempt_spawn(FACTORY, self.factory_locations)
 
 
     def build_defense_for_round(self, game_state, defense_dict):
@@ -97,16 +105,6 @@ class AlgoStrategy(gamelib.AlgoCore):
                 game_state.attempt_spawn(WALL, defense_dict[key])
             elif key == 'turret':
                 game_state.attempt_spawn(TURRET, defense_dict[key])
-
-
-    def build_initial_defense(self, game_state):
-        wall_locations = [[0, 13], [27, 13], [26, 12], [25, 11]]
-        game_state.attempt_spawn(WALL, wall_locations)
-        turret_locations = [[3, 12], [22, 11], [7, 8], [17, 6]]
-        game_state.attempt_spawn(TURRET, turret_locations)
-        factory_locations = [[14, 2]]
-        game_state.attempt_spawn(FACTORY, factory_locations)
-        game_state.attempt_upgrade(factory_locations)
 
 
     def build_defences(self, game_state):
