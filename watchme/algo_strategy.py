@@ -136,19 +136,31 @@ class AlgoStrategy(gamelib.AlgoCore):
 
 
     def watchme_strategy(self, game_state):
-        if self.assassinate_mode_on:
+        try:
+            if self.assassinate_mode_on:
 
-            if game_state.get_resource(MP, 0) > self.assassinate_MP_requirement:
-                self.assassinate_ready = True
-            else:
-                self.assassinate_ready = False
+                if game_state.get_resource(MP, 0) > self.assassinate_MP_requirement:
+                    self.assassinate_ready = True
+                else:
+                    self.assassinate_ready = False
+        except:
+            gamelib.debug_write("EXCEPTION IN CHECKING ASSASSINATION!!!")
 
         # Building basic defense
-        self.build_defense(game_state)
+        try:
+            self.build_defense(game_state)
+        except:
+            gamelib.debug_write("EXCEPTION IN BUILD DEFENSE!!!")
         # Building factories
-        self.build_factory(game_state)
+        try:
+            self.build_factory(game_state)
+        except:
+            gamelib.debug_write("EXCEPTION IN BUILD FACTORY!!!")
         # Initiating attack
-        self.initiate_attack(game_state)
+        try:
+            self.initiate_attack(game_state)
+        except:
+            gamelib.debug_write("EXCEPTION IN INITIATE ATTACK!!!")
 
         if self.assassinate_mode_on:
             game_state.attempt_remove(self.assassinate_to_remove)
