@@ -147,25 +147,39 @@ class AlgoStrategy(gamelib.AlgoCore):
 
 
     def watchme_strategy(self, game_state):
-        if self.assassinate_mode_on:
-            self.enemy_critical_wall_count, self.enemy_critical_turret_count = self.detect_enemy_critical_units(game_state)
-            if self.enemy_critical_turret_count < 2:
-                if game_state.get_resource(MP, 0) > self.assassinate_MP_requirement_low:
-                    self.assassinate_small_ready = True
+
+        try:
+            if self.assassinate_mode_on:
+                self.enemy_critical_wall_count, self.enemy_critical_turret_count = self.detect_enemy_critical_units(
+                    game_state)
+                if self.enemy_critical_turret_count < 2:
+                    if game_state.get_resource(MP, 0) > self.assassinate_MP_requirement_low:
+                        self.assassinate_small_ready = True
+                    else:
+                        self.assassinate_small_ready = False
                 else:
-                    self.assassinate_small_ready = False
-            else:
-                if game_state.get_resource(MP, 0) > self.assassinate_MP_requirement_high:
-                    self.assassinate_big_ready = True
-                else:
-                    self.assassinate_big_ready = False
+                    if game_state.get_resource(MP, 0) > self.assassinate_MP_requirement_high:
+                        self.assassinate_big_ready = True
+                    else:
+                        self.assassinate_big_ready = False
+        except:
+            gamelib.debug_write("EXCEPTION IN CHECKING ASSASSINATION!!!")
 
         # Building basic defense
-        self.build_defense(game_state)
+        try:
+            self.build_defense(game_state)
+        except:
+            gamelib.debug_write("EXCEPTION IN BUILD DEFENSE!!!")
         # Building factories
-        self.build_factory(game_state)
+        try:
+            self.build_factory(game_state)
+        except:
+            gamelib.debug_write("EXCEPTION IN BUILD FACTORY!!!")
         # Initiating attack
-        self.initiate_attack(game_state)
+        try:
+            self.initiate_attack(game_state)
+        except:
+            gamelib.debug_write("EXCEPTION IN INITIATE ATTACK!!!")
 
         if self.assassinate_mode_on:
             game_state.attempt_remove(self.assassinate_to_remove)
