@@ -110,18 +110,29 @@ class AlgoStrategy(gamelib.AlgoCore):
 
         self.enemy_critical_locations = [[0, 14], [1, 14], [1, 15], [2, 14], [2, 15]]
         self.enemy_critical_wall_count = 0
-        self.enemy_critical_turret_cont = 0
+        self.enemy_critical_turret_count = 0
 
 
         self.assassinate_mode_on = False
-        self.assassinate_ready = False
+
+        self.assassinate_small_ready = False
+        self.assassinate_big_ready = False
         self.assassinate_roadblock = {
             0: (WALL, [[4, 11], [2, 13]])
         }
         self.assassinate_to_remove = [[0, 13], [1, 13], [1, 12], [2, 12], [2, 11], [3, 11]]
-        self.assassinate_bomb_count = 15
-        self.assassinate_dagger_count = 40
-        self.assassinate_MP_requirement = self.assassinate_bomb_count + self.assassinate_dagger_count
+
+        self.assassinate_bomb_count_small = 7
+        self.assassinate_dagger_count_small = 18
+
+        self.assassinate_bomb_count_big = 15
+        self.assassinate_dagger_count_big = 40
+
+        self.assassinate_MP_requirement = None
+        self.assassinate_MP_requirement_low = self.assassinate_bomb_count_small + \
+                                              self.assassinate_dagger_count_small
+        self.assassinate_MP_requirement_high = self.assassinate_bomb_count_big + \
+                                               self.assassinate_dagger_count_big
 
         self.enemy_MP_threshold_list = [27, 47, 67]
 
@@ -137,11 +148,17 @@ class AlgoStrategy(gamelib.AlgoCore):
 
     def watchme_strategy(self, game_state):
         if self.assassinate_mode_on:
-
-            if game_state.get_resource(MP, 0) > self.assassinate_MP_requirement:
-                self.assassinate_ready = True
+            self.enemy_critical_wall_count, self.enemy_critical_turret_count = self.detect_enemy_critical_units(game_state)
+            if self.enemy_critical_turret_count < 2:
+                if game_state.get_resource(MP, 0) > self.assassinate_MP_requirement_low:
+                    self.assassinate_small_ready = True
+                else:
+                    self.assassinate_small_ready = False
             else:
-                self.assassinate_ready = False
+                if game_state.get_resource(MP, 0) > self.assassinate_MP_requirement_high:
+                    self.assassinate_big_ready = True
+                else:
+                    self.assassinate_big_ready = False
 
         # Building basic defense
         self.build_defense(game_state)
@@ -153,13 +170,19 @@ class AlgoStrategy(gamelib.AlgoCore):
         if self.assassinate_mode_on:
             game_state.attempt_remove(self.assassinate_to_remove)
 
-    # def detect_enemy_critical_units(self, game_state):
-    #     wall_count = 0
-    #     turret_count = 0
-    #     for location in self.enemy_critical_locations:
-    #         unit_list = game_state.game_map[location[0], location[1]]
-    #         if len(curr_units) > 0:
-    #             unit = curr_units[0]
+    def detect_enemy_critical_units(self, game_state):
+        wall_count = 0
+        turret_count = 0
+        for location in self.enemy_critical_locations:
+            unit_list = game_state.game_map[location[0], location[1]]
+            if len(unit_list) > 0:
+                unit = unit_list[0]
+                if unit.unit_type == WALL:
+                    wall_count += 1
+                elif unit.unit_type == TURRET:
+                    turret_count += 1
+        return wall_count, turret_count
+
 
 
 
@@ -183,9 +206,12 @@ class AlgoStrategy(gamelib.AlgoCore):
             spawn_number = game_state.attempt_spawn(SCOUT, [[15, 1] for _ in range(100)])
             self.last_rush_attack = (game_state.turn_number, spawn_number, curr_enemy_health)
 
-        if self.assassinate_ready:
-            game_state.attempt_spawn(SCOUT, [[17, 3] for _ in range(self.assassinate_bomb_count)])
-            game_state.attempt_spawn(SCOUT, [[18, 4] for _ in range(1000)])
+        if self.assassinate_small_ready:
+            game_state.attempt_spawn(SCOUT, [[17, 3] for _ in range(self.assassinate_bomb_count_small)])
+            game_state.attempt_spawn(SCOUT, [[18, 4] for _ in range(self.assassinate_dagger_count_small)])
+        elif self.assassinate_big_ready:
+            game_state.attempt_spawn(SCOUT, [[17, 3] for _ in range(self.assassinate_bomb_count_big)])
+            game_state.attempt_spawn(SCOUT, [[18, 4] for _ in range(self.assassinate_dagger_count_big)])
 
 
     def build_defense(self, game_state):
@@ -198,7 +224,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             self.build_defense_for_round(game_state, self.level_1_defense)
             game_state.attempt_spawn(INTERCEPTOR, self.level_1_interceptor_locations)
         else:
-            if self.assassinate_ready:
+            if self.assassinate_small_ready or self.assassinate_big_ready:
                 self.build_defense_for_round(game_state, self.assassinate_roadblock)
                 game_state.attempt_remove(self.assassinate_roadblock[0][1])
 
@@ -276,7 +302,7 @@ class AlgoStrategy(gamelib.AlgoCore):
 
         for order in defense_dict.keys():
             unit_type, unit_locations = defense_dict[order]
-            if self.assassinate_ready:
+            if self.assassinate_small_ready or self.assassinate_big_ready:
                 unit_locations = [i for i in unit_locations if i not in self.assassinate_to_remove]
             if len(unit_locations) > 0:
                 game_state.attempt_spawn(unit_type, unit_locations)
