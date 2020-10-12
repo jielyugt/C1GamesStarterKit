@@ -108,14 +108,19 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.inc_rush_scout_count = 15
         self.max_rush_scout_count = 40
 
+        self.enemy_critical_locations = [[0, 14], [1, 14], [1, 15], [2, 14], [2, 15]]
+        self.enemy_critical_wall_count = 0
+        self.enemy_critical_turret_cont = 0
+
+
         self.assassinate_mode_on = False
         self.assassinate_ready = False
         self.assassinate_roadblock = {
             0: (WALL, [[4, 11], [2, 13]])
         }
         self.assassinate_to_remove = [[0, 13], [1, 13], [1, 12], [2, 12], [2, 11], [3, 11]]
-        self.assassinate_bomb_count = 20
-        self.assassinate_dagger_count = 50
+        self.assassinate_bomb_count = 15
+        self.assassinate_dagger_count = 40
         self.assassinate_MP_requirement = self.assassinate_bomb_count + self.assassinate_dagger_count
 
         self.enemy_MP_threshold_list = [27, 47, 67]
@@ -132,6 +137,7 @@ class AlgoStrategy(gamelib.AlgoCore):
 
     def watchme_strategy(self, game_state):
         if self.assassinate_mode_on:
+
             if game_state.get_resource(MP, 0) > self.assassinate_MP_requirement:
                 self.assassinate_ready = True
             else:
@@ -146,6 +152,16 @@ class AlgoStrategy(gamelib.AlgoCore):
 
         if self.assassinate_mode_on:
             game_state.attempt_remove(self.assassinate_to_remove)
+
+    # def detect_enemy_critical_units(self, game_state):
+    #     wall_count = 0
+    #     turret_count = 0
+    #     for location in self.enemy_critical_locations:
+    #         unit_list = game_state.game_map[location[0], location[1]]
+    #         if len(curr_units) > 0:
+    #             unit = curr_units[0]
+
+
 
     def initiate_attack(self, game_state):
         curr_mp = game_state.get_resource(MP, 0)
@@ -262,7 +278,8 @@ class AlgoStrategy(gamelib.AlgoCore):
             unit_type, unit_locations = defense_dict[order]
             if self.assassinate_ready:
                 unit_locations = [i for i in unit_locations if i not in self.assassinate_to_remove]
-            game_state.attempt_spawn(unit_type, unit_locations)
+            if len(unit_locations) > 0:
+                game_state.attempt_spawn(unit_type, unit_locations)
 
     def replace_defense_for_round(self, game_state, replace_dict):
         # curr_sp = game_state.get_resource(SP, 0)
